@@ -16,7 +16,7 @@
         "city",
         "details"
     ],
-    "homepage": "https://github.com/MakiDizajnerica/geolocation",
+    "homepage": "https://github.com/MakiDizajnerica/laravel-geolocation",
     "authors": [
         {
             "name": "Nemanja Marijanovic",
