@@ -1,0 +1,54 @@
+{
+    "name": "makidizajnerica/laravel-geolocation",
+    "description": "GeoLocation package for Laravel.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "php",
+        "laravel",
+        "framework",
+        "geolocation",
+        "location",
+        "ip",
+        "ipaddress",
+        "country",
+        "continent",
+        "city",
+        "details"
+    ],
+    "homepage": "https://github.com/MakiDizajnerica/geolocation",
+    "authors": [
+        {
+            "name": "Nemanja Marijanovic",
+            "email": "n.marijanovic@hotmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.2",
+        "laravel/framework": ">=8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.9",
+        "phpunit/phpunit": "^9.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "MakiDizajnerica\\GeoLocation\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MakiDizajnerica\\GeoLocation\\Tests": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "MakiDizajnerica\\GeoLocation\\Providers\\GeoLocationServiceProvider"
+            ],
+            "aliases": {
+                "GeoLocation": "MakiDizajnerica\\GeoLocation\\Facades\\GeoLocation"
+            }
+        }
+    }
+}
