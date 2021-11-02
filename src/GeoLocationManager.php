@@ -182,16 +182,14 @@ class GeoLocationManager
             $this->mergeCollection(
                 $collection, $this->retrieveFromCache($ipAddress)
             );
-        }
-        else {
+        } else {
             try {
                 $this->mergeCollection(
                     $collection, $this->retrieveFromLookup($ipAddress)
                 );
 
                 $this->storeToCache($ipAddress, $collection);
-            }
-            catch (GeoLocationDriverException $e) {
+            } catch (GeoLocationDriverException $e) {
                 $this->reportException($e);
             }
         }
@@ -248,12 +246,14 @@ class GeoLocationManager
      */
     protected function storeToCache($ipAddress, $collection)
     {
-        if ($this->config('cache.store_to_cache')
-            && $collection instanceof Collection
-            && $collection->isNotEmpty()) {
-            $this->cache()
-                //->tags($this->config('cache.tags'))
-                ->put($ipAddress, $collection->toArray(), $this->config('cache.ttl'));
+        if ($this->config('cache.store_to_cache') &&
+            $collection instanceof Collection &&
+            $collection->isNotEmpty()) {
+            $this->cache()->put(
+                $this->cacheKey($ipAddress),
+                $collection->toArray(),
+                $this->config('cache.ttl')
+            );
         }
     }
 
@@ -265,9 +265,20 @@ class GeoLocationManager
      */
     protected function retrieveFromCache($ipAddress)
     {
-        return $this->cache()
-            //->tags($this->config('cache.tags'))
-            ->get($ipAddress);
+        return $this->cache()->get(
+            $this->cacheKey($ipAddress)
+        );
+    }
+
+    /**
+     * Format cache key.
+     *
+     * @param  string $ipAddress
+     * @return string
+     */
+    protected function cacheKey($ipAddress)
+    {
+        return 'geolocation-' . $ipAddress;
     }
 
     /**

@@ -28,7 +28,7 @@ class AbstractApi extends GeoLocationDriver
      */
     public function format($data)
     {
-        // {key_that_will_be_available_in_collection} => {response_data_key}
+        // {key_that_will_be_available_in_collection} => {response_data_using_dot_notation}
         return $this->formatted($data, [
             'ip' => 'ip_address',
             'continent' => 'continent',

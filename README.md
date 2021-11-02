@@ -13,6 +13,8 @@ Laravel will auto load provider using Package Discovery.
 
 ## Usage
 
+### Using Facade
+
 Return value of the `MakiDizajnerica\GeoLocation\Facades\GeoLocation::lookup()` is the instance of `Illuminate\Support\Collection`.
 To find out more about Laravel Collections head to [Collections - Laravel](https://laravel.com/docs/8.x/collections).
 
@@ -123,12 +125,56 @@ Predefined drivers:
 
 _Depending on the driver that is used it is possible to get different results._
 
+### Using Middleware
+
+First you need to add `MakiDizajnerica\GeoLocation\Http\Middleware\GeoLocationLookupMiddleware` inside `App\Http\Kernel::$routeMiddleware` like so:
+
+```php
+'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
+'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+
+'geolocation' => \MakiDizajnerica\GeoLocation\Http\Middleware\GeoLocationLookupMiddleware::class,
+```
+
+Then inside your controller `Illuminate\Http\Request $request` will have `$geolocation` property available:
+
+```php
+Route::middleware('geolocation')->get('/', function (Request $request) {
+
+    dd($request->geolocation);
+
+    return view('welcome');
+});
+
+// Array
+// (
+//     [success] => 1
+//     [ip] => 8.8.4.4
+//     [continent] => North America
+//     [continentCode] => NA
+//     [country] => United States
+//     [countryCode] => US
+//     [countryFlag] => https://cdn.ipwhois.io/flags/us.svg
+//     [countryCapital] => Washington
+//     [region] => California
+//     [city] => Mountain View
+//     [timezone] => America/Los_Angeles
+//     [timezoneName] => Pacific Standard Time
+//     [currency] => US Dollar
+//     [currencyCode] => USD
+//     [currencySymbol] => $
+//     [latitude] => 37.3860517
+//     [longitude] => -122.0838511
+// )
+```
+
 ## Publishing Config File
 
 To publish `geolocation.php` config file use command:
 
 ```bash
-php artisan vendor:publish --tag=laravel-geolocation-config
+php artisan vendor:publish --tag=geolocation-config
 ```
 
 ## Creating Custom Driver
@@ -268,7 +314,7 @@ Then on runtime pass array containing that placeholder as key as second paramete
 ```php
 use MakiDizajnerica\GeoLocation\Facades\GeoLocation;
 
-$collection = GeoLocation::driver('customdriver', ['{lang}' => 'en'])->lookup('8.8.4.4');
+$collection = GeoLocation::driver('customdriver', ['lang' => 'en'])->lookup('8.8.4.4');
 ```
 
 So when you call `apiEndpoint()` method inside your driver lookup method,

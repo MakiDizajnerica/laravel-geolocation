@@ -87,17 +87,14 @@ return [
     | Cache Options
     |--------------------------------------------------------------------------
     |
-    | Here you may define if lookup records should be cached, 
-    | also define cache tags and cache expiration time.
+    | Here you may define if lookup records should be cached and cache
+    | expiration time.
     |
     */
 
     'cache' => [
 
     	'store_to_cache' => true,
-        // 'tags' => [
-        //     'geolocation'
-        // ],
         'ttl' => 86400,
 
     ],
