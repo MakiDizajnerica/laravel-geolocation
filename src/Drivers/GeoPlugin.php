@@ -3,12 +3,9 @@
 namespace MakiDizajnerica\GeoLocation\Drivers;
 
 use MakiDizajnerica\GeoLocation\GeoLocationDriver;
-use MakiDizajnerica\GeoLocation\Support\HandlingHttpResponse;
 
 class GeoPlugin extends GeoLocationDriver
 {
-    use HandlingHttpResponse;
-
     /**
      * Get the geo location details for provided IP address.
      *

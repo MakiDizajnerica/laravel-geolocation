@@ -1,3 +1,5 @@
+<p align="center"><img src="/art/logo.png" alt="Laravel GeoLocation Logo"></p>
+
 # Laravel GeoLocation
 
 Laravel package to get the details about region, city, country, timezone, currency, etc. for a given IP address.
