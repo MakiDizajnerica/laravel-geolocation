@@ -16,7 +16,7 @@ trait ResponseDataFormatter
     protected function formatted($data, array $format)
     {
         if (is_array($data) && ! empty($data)) {
-            if (empty($format)) {
+            if (blank($format)) {
                 return $data;
             }
 

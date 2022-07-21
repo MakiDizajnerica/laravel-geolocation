@@ -3,19 +3,7 @@
     "description": "GeoLocation package for Laravel.",
     "type": "library",
     "license": "MIT",
-    "keywords": [
-        "php",
-        "laravel",
-        "framework",
-        "geolocation",
-        "location",
-        "ip",
-        "ipaddress",
-        "country",
-        "continent",
-        "city",
-        "details"
-    ],
+    "keywords": ["php", "laravel", "framework", "geolocation", "location", "ip", "ip address", "country", "continent", "city", "details"],
     "homepage": "https://github.com/MakiDizajnerica/laravel-geolocation",
     "authors": [
         {
@@ -24,8 +12,8 @@
         }
     ],
     "require": {
-        "php": ">=7.4",
-        "laravel/framework": ">=8.0"
+        "php": ">=8.0",
+        "laravel/framework": ">=9.0"
     },
     "require-dev": {
         "orchestra/testbench": "^6.9",

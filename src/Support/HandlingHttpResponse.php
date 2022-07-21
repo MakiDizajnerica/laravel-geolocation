@@ -24,9 +24,7 @@ trait HandlingHttpResponse
             'Accept' => 'application/json',
         ])->get($this->apiEndpoint($ipAddress));
 
-        return $this->decodeResponseData(
-            $this->checkResponse($response)
-        );
+        return $this->decodeResponseData($this->checkResponse($response));
     }
 
     /**
@@ -44,9 +42,7 @@ trait HandlingHttpResponse
                 return $response->throw();
             }
             catch (RequestException $e) {
-                throw new GeoLocationDriverException(
-                    $e->getMessage(), static::class
-                );
+                throw new GeoLocationDriverException($e->getMessage(), static::class);
             }
         }
 
@@ -62,9 +58,7 @@ trait HandlingHttpResponse
     protected function decodeResponseData($response)
     {
         if ($response instanceof Response) {
-            $data = json_decode(
-                $response = $response->getBody()->getContents(), true
-            );
+            $data = json_decode($response = $response->getBody()->getContents(), true);
 
             // Sometimes the response can be a string which will result in
             // a JSON_ERROR so for this cases we do:

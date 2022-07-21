@@ -127,24 +127,17 @@ Predefined drivers:
 
 _Depending on the driver that is used it is possible to get different results._
 
-### Using Middleware
+### Request Macro
 
-First you need to add `MakiDizajnerica\GeoLocation\Http\Middleware\GeoLocationLookupMiddleware` inside `App\Http\Kernel::$routeMiddleware` like so:
-
-```php
-'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-
-'geolocation' => \MakiDizajnerica\GeoLocation\Http\Middleware\GeoLocationLookupMiddleware::class,
-```
-
-Then inside your controller `Illuminate\Http\Request $request` will have `$geolocation` property available:
+Inside your controller `Illuminate\Http\Request $request` will have `geolocation()` method available:
 
 ```php
-Route::middleware('geolocation')->get('/', function (Request $request) {
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
-    dd($request->geolocation);
+Route::get('/', function (Request $request) {
+
+    dd($request->geolocation()->toArray());
 
     return view('welcome');
 });
@@ -194,7 +187,7 @@ class CustomDriver extends GeoLocationDriver
         //
     }
 
-    public function format($data): array
+    public function format(array $data): array
     {
         return [
             //
@@ -241,7 +234,7 @@ class CustomDriver extends GeoLocationDriver
         return $data;
     }
 
-    public function format($data): array
+    public function format(array $data): array
     {
         return [
             'ip' => $data['ip'],

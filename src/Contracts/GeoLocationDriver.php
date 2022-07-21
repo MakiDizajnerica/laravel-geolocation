@@ -12,7 +12,7 @@ interface GeoLocationDriver
      *
      * @throws \MakiDizajnerica\GeoLocation\Exceptions\GeoLocationDriverException
      */
-    public function lookup($ipAddress);
+    public function lookup($ipAddress): array;
 
     /**
      * Format lookup response.
@@ -20,5 +20,5 @@ interface GeoLocationDriver
      * @param  array $data
      * @return array
      */
-    public function format($data);
+    public function format(array $data): array;
 }

@@ -12,7 +12,7 @@ class AbstractApi extends GeoLocationDriver
      * @param  string $ipAddress
      * @return array
      */
-    public function lookup($ipAddress)
+    public function lookup($ipAddress): array
     {
         return $this->httpClientLookup($ipAddress);
     }
@@ -23,7 +23,7 @@ class AbstractApi extends GeoLocationDriver
      * @param  array $data
      * @return array
      */
-    public function format($data)
+    public function format(array $data): array
     {
         // {key_that_will_be_available_in_collection} => {response_data_using_dot_notation}
         return $this->formatted($data, [

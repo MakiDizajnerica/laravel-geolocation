@@ -76,9 +76,7 @@ trait ApiEndpointFormatter
                 }
             }
 
-            return LaravelArr::query(
-                Arr::mergeByAppending($query, $this->queryParams)
-            );
+            return LaravelArr::query(Arr::mergeByAppending($query, $this->queryParams));
         }
 
         return '';

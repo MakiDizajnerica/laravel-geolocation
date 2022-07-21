@@ -10,8 +10,13 @@ use MakiDizajnerica\GeoLocation\Exceptions\GeoLocationDriverException;
 
 class GeoLocationManager
 {
+    /** @param array */
     protected $config;
+
+    /** @param \Illuminate\Cache\CacheManager */
     protected $cache;
+
+    /** @param MakiDizajnerica\GeoLocation\Contracts\GeoLocationDriver */
     protected $driver;
 
     /**
@@ -37,16 +42,14 @@ class GeoLocationManager
      */
     protected function config($key = null)
     {
-        if (! is_string($key) || empty($key)) {
+        if (! $key) {
             return $this->config;
         }
 
         $config = Arr::get($this->config, $key, null);
 
         if (is_null($config)) {
-            throw new InvalidArgumentException(
-                sprintf('GeoLocation config property \'%s\' not defined.', $key)
-            );
+            throw new InvalidArgumentException("GeoLocation config property '{$key}' not defined.");
         }
 
         return $config;
@@ -69,9 +72,7 @@ class GeoLocationManager
      */
     protected function setDefaultDriver()
     {
-        $this->driver(
-            $this->getDefaultDriver()
-        );
+        $this->driver($this->getDefaultDriver());
     }
 
     /**
@@ -88,58 +89,50 @@ class GeoLocationManager
      * Set driver.
      * 
      * @param  string $driver
-     * @param  array  $queryParams
+     * @param  array $queryParams
      * @return \MakiDizajnerica\GeoLocation\GeoLocationManager
-     * 
-     * @throws \InvalidArgumentException
      */
     public function driver($driver, array $queryParams = [])
     {
-        if (! is_string($driver) || empty($driver)) {
-            throw new InvalidArgumentException('GeoLocation driver must be non-empty string.');
-        }
+        $this->resolve($driver, $queryParams);
 
-        return $this->resolve($driver, $queryParams);
+        return $this;
     }
 
     /**
      * Resolve the driver.
      * 
      * @param  string $driver
-     * @param  array  $queryParams
+     * @param  array $queryParams
      * @return \MakiDizajnerica\GeoLocation\GeoLocationManager
      * 
      * @throws \InvalidArgumentException
      */
     protected function resolve($driver, array $queryParams)
     {
-        $options = Arr::wrap(
-            $this->config(sprintf('drivers.%s', $driver))
-        );
+        if (! is_string($driver) || empty($driver)) {
+            throw new InvalidArgumentException('GeoLocation driver must be non-empty string.');
+        }
 
-        if (empty($options)) {
-            throw new InvalidArgumentException(
-                sprintf('GeoLocation driver \'%s\' is not defined.', $driver)
-            );
+        $options = Arr::wrap($this->config("drivers.{$driver}"));
+
+        if (! $options) {
+            throw new InvalidArgumentException("GeoLocation driver '{$driver}' is not defined.");
         }
 
         $driverClass = Arr::pull($options, 'driver');
 
         if (! class_exists($driverClass)) {
-            throw new InvalidArgumentException(
-                sprintf('GeoLocation driver \'%s\' does not exist.', $driverClass)
-            );
+            throw new InvalidArgumentException("GeoLocation driver '{$driverClass}' does not exist.");
         }
 
         $this->driver = new $driverClass($options, $queryParams);
-
-        return $this;
     }
 
     /**
      * Get driver.
      *
-     * @return MakiDizajnerica\GeoLocation\GeoLocationDriver
+     * @return \MakiDizajnerica\GeoLocation\Contracts\GeoLocationDriver
      */
     protected function getDriver()
     {
@@ -157,7 +150,7 @@ class GeoLocationManager
     protected function collectIpAddress($ipAddress)
     {
         if ($this->config('auto_detect_ip')) {
-            return request()->ip();
+            $ipAddress = request()->ip();
         }
 
         if (! is_string($ipAddress) || empty($ipAddress)) {
@@ -179,13 +172,13 @@ class GeoLocationManager
         $collection = collect([]);
 
         if ($this->cache()->has($ipAddress)) {
-            $this->mergeCollection(
-                $collection, $this->retrieveFromCache($ipAddress)
+            $collection = $collection->merge(
+                $this->retrieveFromCache($ipAddress)
             );
         } else {
             try {
-                $this->mergeCollection(
-                    $collection, $this->retrieveFromLookup($ipAddress)
+                $collection = $collection->merge(
+                    $this->retrieveFromLookup($ipAddress)
                 );
 
                 $this->storeToCache($ipAddress, $collection);
@@ -205,20 +198,9 @@ class GeoLocationManager
      */
     protected function retrieveFromLookup($ipAddress)
     {
-        return $this->format(
-            $this->getDriver()->lookup($ipAddress)
-        );
-    }
+        $data = $this->getDriver()->lookup($ipAddress);
 
-    /**
-     * Format driver lookup data.
-     *
-     * @param  mixed $data
-     * @return array
-     */
-    protected function format($data)
-    {
-        if (is_array($data) && ! empty($data)) {
+        if (is_array($data) && ! blank($data)) {
             return $this->getDriver()->format($data);
         }
 
@@ -226,15 +208,14 @@ class GeoLocationManager
     }
 
     /**
-     * Merge data collection.
+     * Retrieve collection from cache.
      *
-     * @param  \Illuminate\Support\Collection $collection
-     * @param  array $data
-     * @return void
+     * @param  string $ipAddress
+     * @return array
      */
-    protected function mergeCollection(&$collection, $data)
+    protected function retrieveFromCache($ipAddress)
     {
-        $collection = $collection->merge($data);
+        return $this->cache()->get($this->cacheKey($ipAddress));
     }
 
     /**
@@ -255,19 +236,6 @@ class GeoLocationManager
                 $this->config('cache.ttl')
             );
         }
-    }
-
-    /**
-     * Retrieve collection from cache.
-     *
-     * @param  string $ipAddress
-     * @return array
-     */
-    protected function retrieveFromCache($ipAddress)
-    {
-        return $this->cache()->get(
-            $this->cacheKey($ipAddress)
-        );
     }
 
     /**

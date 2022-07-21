@@ -2,11 +2,12 @@
 
 namespace MakiDizajnerica\GeoLocation;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use MakiDizajnerica\GeoLocation\GeoLocationManager;
-use Illuminate\Contracts\Support\DeferrableProvider;
+use MakiDizajnerica\GeoLocation\Facades\GeoLocation;
 
-class GeoLocationServiceProvider extends ServiceProvider implements DeferrableProvider
+class GeoLocationServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
@@ -15,13 +16,11 @@ class GeoLocationServiceProvider extends ServiceProvider implements DeferrablePr
      */
     public function register()
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../config/geolocation.php', 'geolocation'
-        );
+        $this->mergeConfigFrom(__DIR__ . '/../config/geolocation.php', 'geolocation');
 
         $this->app->singleton('geolocation', function($app) {
             return $app->makeWith(GeoLocationManager::class, [
-                'config' => $app['config']->get('geolocation'),
+                'config' => $app->get('config')->get('geolocation'),
                 'cache' => $app->get('cache'),
             ]);
         });
@@ -34,18 +33,12 @@ class GeoLocationServiceProvider extends ServiceProvider implements DeferrablePr
      */
     public function boot()
     {
-        $this->publishes([
-            __DIR__ . '/../config/geolocation.php' => config_path('geolocation.php')
-        ], 'geolocation-config');
-    }
+        if ($this->app->runningInConsole()) {
+            $this->publishes([__DIR__ . '/../config/geolocation.php' => config_path('geolocation.php')], 'geolocation-config');
+        }
 
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return ['geolocation'];
+        Request::macro('geolocation', function () {
+            return GeoLocation::lookup($this->ip());
+        });
     }
 }

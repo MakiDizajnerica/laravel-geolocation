@@ -38,16 +38,14 @@ abstract class GeoLocationDriver implements GeoLocationDriverContract
      */
     protected function options($key = null)
     {
-        if (! is_string($key) || empty($key)) {
+        if (! $key) {
             return $this->options;
         }
 
         $options = Arr::get($this->options, $key, null);
 
         if (is_null($options)) {
-            throw new InvalidArgumentException(
-                sprintf('GeoLocation driver option \'%s\' not defined.', $key)
-            );
+            throw new InvalidArgumentException("GeoLocation driver option '{$key}' not defined.");
         }
 
         return $options;
