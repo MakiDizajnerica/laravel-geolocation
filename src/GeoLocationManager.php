@@ -10,14 +10,17 @@ use MakiDizajnerica\GeoLocation\Exceptions\GeoLocationDriverException;
 
 class GeoLocationManager
 {
-    /** @param array */
+    /** @var array */
     protected $config;
 
-    /** @param \Illuminate\Cache\CacheManager */
+    /** @var \Illuminate\Cache\CacheManager */
     protected $cache;
 
-    /** @param MakiDizajnerica\GeoLocation\Contracts\GeoLocationDriver */
+    /** @var MakiDizajnerica\GeoLocation\Contracts\GeoLocationDriver */
     protected $driver;
+
+    /** @var array */
+    protected $collection;
 
     /**
      * @param  array $config
@@ -100,6 +103,16 @@ class GeoLocationManager
     }
 
     /**
+     * Get driver.
+     *
+     * @return \MakiDizajnerica\GeoLocation\Contracts\GeoLocationDriver
+     */
+    protected function getDriver()
+    {
+        return $this->driver;
+    }
+
+    /**
      * Resolve the driver.
      * 
      * @param  string $driver
@@ -127,16 +140,6 @@ class GeoLocationManager
         }
 
         $this->driver = new $driverClass($options, $queryParams);
-    }
-
-    /**
-     * Get driver.
-     *
-     * @return \MakiDizajnerica\GeoLocation\Contracts\GeoLocationDriver
-     */
-    protected function getDriver()
-    {
-        return $this->driver;
     }
 
     /**
@@ -171,20 +174,27 @@ class GeoLocationManager
         $ipAddress = $this->collectIpAddress($ipAddress);
         $collection = collect([]);
 
-        if ($this->cache()->has($ipAddress)) {
-            $collection = $collection->merge(
-                $this->retrieveFromCache($ipAddress)
-            );
-        } else {
-            try {
-                $collection = $collection->merge(
-                    $this->retrieveFromLookup($ipAddress)
-                );
+        switch (true) {
+            case $this->isInProperty($ipAddress):
+                $collection = $collection->merge($this->retrieveFromProperty($ipAddress));
+                break;
+            case $this->isInCache($ipAddress):
+                $collection = $collection->merge($this->retrieveFromCache($ipAddress));
 
-                $this->storeToCache($ipAddress, $collection);
-            } catch (GeoLocationDriverException $e) {
-                $this->reportException($e);
-            }
+                $this->storeToProperty($ipAddress, $collection);
+                break;
+            default:
+                try {
+                    $collection = $collection->merge($this->retrieveFromLookup($ipAddress));
+
+                    $this->storeToCache($ipAddress, $collection);
+                    $this->storeToProperty($ipAddress, $collection);
+                } catch (GeoLocationDriverException $e) {
+                    if ($this->config('log_errors')) {
+                        report($e);
+                    }
+                }
+                break;
         }
 
         return $collection;
@@ -205,6 +215,15 @@ class GeoLocationManager
         }
 
         return [];
+    }
+
+    /**
+     * @param  string $ipAddress
+     * @return bool
+     */
+    protected function isInCache($ipAddress)
+    {
+        return $this->cache()->has($this->cacheKey($ipAddress));
     }
 
     /**
@@ -246,19 +265,42 @@ class GeoLocationManager
      */
     protected function cacheKey($ipAddress)
     {
-        return 'geolocation-' . $ipAddress;
+        return "geolocation-{$ipAddress}";
     }
 
     /**
-     * Report exception to log files.
+     * @param  string $ipAddress
+     * @return bool
+     */
+    protected function isInProperty($ipAddress)
+    {
+        if (isset($this->collection[$ipAddress])) {
+            return ! blank($this->collection[$ipAddress]);
+        }
+    
+        return false;
+    }
+
+    /**
+     * Retrieve collection from property.
      *
-     * @param  \MakiDizajnerica\GeoLocation\Exceptions\GeoLocationDriverException $e
+     * @param  string $ipAddress
+     * @return array
+     */
+    protected function retrieveFromProperty($ipAddress)
+    {
+        return $this->collection[$ipAddress];
+    }
+
+    /**
+     * Store collection to property.
+     *
+     * @param  string $ipAddress
+     * @param  \Illuminate\Support\Collection $collection
      * @return void
      */
-    protected function reportException(GeoLocationDriverException $e)
+    protected function storeToProperty($ipAddress, $collection)
     {
-        if ($this->config('log_errors')) {
-            report($e);
-        }
+        $this->collection[$ipAddress] = $collection->toArray();
     }
 }
